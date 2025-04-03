@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<link rel="stylesheet" href="/style.css">
+	
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	
+    <meta charset="UTF-8">
+    <title>Dashboard Azienda Ittica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Performance Giornaliera</h1>
+	<button onclick="generaDati()">Genera Nuovi Dati</button>
+	<p id="msg" style="color: green;"></p>
+	<canvas id="graficoTemperatura" width="600" height="300"></canvas>
+	
+	
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Giorno</th>
+                <th>Temperatura (°C)</th>
+                <th>Ossigeno (mg/l)</th>
+                <th>Salinità (%)</th>
+                <th>Crescita Pesci (cm)</th>
+                <th>Mortalità (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${performances}">
+                <td th:text="${p.id}"></td>
+                <td th:text="${p.giorno}"></td>
+                <td th:text="${p.temperatura}"></td>
+                <td th:text="${p.ossigeno}"></td>
+                <td th:text="${p.salinita}"></td>
+                <td th:text="${p.crescitaPesci}"></td>
+                <td th:text="${p.mortalita}"></td>
+            </tr>
+        </tbody>
+    </table>
+    <script>
+  function generaDati() {
+    fetch('/api/simulatore/genera', {
+      method: 'POST'
+    })
+    .then(response => response.text())
+    .then(msg => {
+      document.getElementById('msg').innerText = msg;
+      setTimeout(() => {
+        window.location.reload(); // ricarica la tabella dopo 1 secondo
+      }, 1000);
+    })
+    .catch(err => {
+      alert("Errore nella generazione: " + err);
+    });
+  }
+</script>    
+<script th:inline="javascript">
+    let performances = [[${performances}]];
+    let labels = [];
+    let temperature = [];
+
+    for (let i = 0; i < performances.length; i++) {
+        labels.push(performances[i].giorno);
+        temperature.push(performances[i].temperatura);
+    }
+
+    const ctx = document.getElementById('graficoTemperatura').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Temperatura (°C)',
+                data: temperature,
+                borderWidth: 2,
+                fill: false,
+                borderColor: 'rgba(75,192,192,1)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+    function azzeraDati() {
+  fetch('/api/simulatore/azzera', {
+    method: 'DELETE'
+  })
+  .then(response => response.text())
+  .then(msg => {
+    document.getElementById('msg').innerText = msg;
+    setTimeout(() => {
+      window.location.reload(); // ricarica la tabella
+    }, 1000);
+  })
+  .catch(err => {
+    alert("Errore nell'eliminazione: " + err);
+  });
+}
+    
+</script>
+<!-- Pulsante Esporta -->
+<a href="/api/simulatore/esporta">
+    <button style="float: right;">📤 Esporta in CSV</button>
+</a> <p id="msg" style="color: green; font-weight: bold;"></p>
+
+
+<!-- Pulsante Azzera -->
+<button onclick="azzeraDati()" >🗑️ Azzera Tutti i Dati</button>
+<script>
+function azzeraDati() {
+  fetch('/api/simulatore/azzera', {
+    method: 'DELETE'
+  })
+  .then(response => response.text())
+  .then(msg => {
+    document.getElementById('msg').innerText = msg;
+    setTimeout(() => {
+      window.location.reload(); // Ricarica i dati dopo 1 secondo
+    }, 1000);
+  })
+  .catch(err => {
+    document.getElementById('msg').innerText = "Errore!";
+  });
+}
+</script>
+
+
+</body>
+</html>
