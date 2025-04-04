@@ -31,10 +31,9 @@ Questo progetto è stato realizzato come parte del Project Work per il conseguim
 
 ##  Struttura del Progetto
 
-ittica-dashboard/ ├── controller/ ├── model/ ├── repository/ ├── service/ ├── templates/ # File HTML Thymeleaf ├── static/ # File CSS └── application.properties
+ittica-dashboard/ ─ controller/ ─ model/ ─ repository/ ─ service/ ─ templates/ # File HTML Thymeleaf ─ static/ # File CSS ─ application.properties
 
 ##  Come Avviare il Progetto
 
 1. Creare il database `azienda_ittica` su MySQL:
-   ```sql
    CREATE DATABASE azienda_ittica;
